@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Meiswinkel.NightScoutReporter.NightScoutClient</RootNamespace>
+    <AssemblyName>Meiswinkel.NightScoutReporter.NightScoutClient</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NightScoutCommon\NightScoutCommon.csproj" />
+    <ProjectReference Include="..\NightScoutContracts\NightScoutContracts.csproj" />
+  </ItemGroup>
+
+</Project>

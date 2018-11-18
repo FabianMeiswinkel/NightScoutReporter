@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Meiswinkel.NightScoutReporter.NightScoutContracts</RootNamespace>
+    <AssemblyName>Meiswinkel.NightScoutReporter.NightScoutContracts</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NightScoutCommon\NightScoutCommon.csproj" />
+  </ItemGroup>
+
+</Project>
