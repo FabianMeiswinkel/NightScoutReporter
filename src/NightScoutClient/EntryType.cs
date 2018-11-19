@@ -8,7 +8,7 @@ namespace Meiswinkel.NightScoutReporter.NightScoutClient
     {
         All = 0,
         SerumGlucoseValues = 1,
-        MeterBloodGlucose = 2,
+        MeterBloodGlucoseValues = 2,
         Calibration = 3
     }
 }

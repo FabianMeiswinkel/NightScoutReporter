@@ -41,6 +41,15 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         public decimal? Sgv { get; set; }
 
         /// <summary>
+        /// The glucose reading. (only available for mbg types)
+        /// </summary>
+        [JsonProperty(PropertyName = "mbg")]
+        public decimal? Mbg
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// Direction of glucose trend reported by CGM. (only available for sgv types)
         /// </summary>
         [JsonProperty(PropertyName = "direction")]

@@ -118,7 +118,7 @@ namespace Meiswinkel.NightScoutReporter.NightScoutClient
                     uriBuilder.Path = "/api/v1/entries/cal";
                     break;
 
-                case EntryType.MeterBloodGlucose:
+                case EntryType.MeterBloodGlucoseValues:
                     uriBuilder.Path = "/api/v1/entries/mbg";
                     break;
 
@@ -298,7 +298,7 @@ namespace Meiswinkel.NightScoutReporter.NightScoutClient
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
+                    this.client.Dispose();
                 }
 
                 // TODO: free unmanaged resources (unmanaged objects) and override a finalizer below.

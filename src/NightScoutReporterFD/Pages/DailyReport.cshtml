@@ -1,0 +1,159 @@
+﻿@page
+@model NightScoutReporterFD.Pages.DailyReportModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>DailyReport</title>
+    <script src="../lib/Chart.js/Chart.bundle.js"></script>
+    <script src="../lib/utils.js"></script>
+    <style>
+        canvas {
+            -moz-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <h2>@this.Model.DayQueryParameter</h2>
+    <div style="width:75%;">
+        <canvas id="canvas"></canvas>
+    </div>
+    <br>
+    <br>
+    <script>
+        var sgvs = [@this.Model.SerumGlucoseValues];
+        var mbgvs = [@this.Model.MeterBloodGlucoseValues];
+        var criticalLows = [@this.Model.CriticalLows];
+        var criticalHighs = [@this.Model.CriticalHighs];
+        var warningLows = [@this.Model.WarningLows];
+        var warningHighs = [@this.Model.WarningHighs];
+        var inTargets = [@this.Model.InTargets];
+        var config = {
+            type: 'line',
+            data: {
+                labels: [@this.Model.TimeLineLabels],
+                datasets: [ {
+                    label: 'CriticalLow',
+                    data: criticalLows,
+                    borderColor: 'rgba(255, 0, 0, 0.2)',
+                    borderWidth: 0,
+                    backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                    pointRadius: 0,
+                    fill: "origin",
+                    pointStyle: "line"
+                }, {
+                    label: 'WarningLows',
+                    data: warningLows,
+                    borderColor: 'rgba(255,255,0,0.2)',
+                    borderWidth: 0,
+                    backgroundColor: 'rgba(255,255,0,0.2)',
+                    pointRadius: 0,
+                    fill: "-1",
+                    pointStyle: "line"
+                }, {
+                    label: 'all good',
+                    data: inTargets,
+                    borderColor: 'rgba(0,255,0,0.2)',
+                    borderWidth: 0,
+                    backgroundColor: 'rgba(0,255,0,0.2)',
+                    pointRadius: 0,
+                    fill: "-1",
+                    pointStyle: "line"
+                }, {
+                    label: 'WarningHighs',
+                    data: warningHighs,
+                    borderColor: 'rgba(255,255,0,0.2)',
+                    borderWidth: 0,
+                    backgroundColor: 'rgba(255,255,0,0.2)',
+                    pointRadius: 0,
+                    fill: "-1",
+                    pointStyle: "line"
+                }, {
+                    label: 'CriticalHighs',
+                    data: criticalHighs,
+                    borderColor: 'rgba(255, 0, 0, 0.2)',
+                    borderWidth: 0,
+                    backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                    pointRadius: 0,
+                    fill: "-1",
+                    pointStyle: "line"
+                }, {
+                    label: 'CGM',
+                    data: sgvs,
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    pointBorderColor: 'rgba(0, 0, 0, 1)',
+                    pointBackgroundColor: 'rgba(0, 0, 0, 1)',
+                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                    pointRadius: 2,
+                    pointStyle: 'point',
+                    fill: false,
+                    cubicInterpolationMode: 'monotone'
+                }, {
+                    label: 'Messgerät',
+                    data: mbgvs,
+                    borderColor: 'rgba(0, 0, 255, 1)',
+                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                    pointStyle: 'triangle',
+                    pointBackgroundColor: 'rgba(0, 0, 255, 1)',
+                    pointRadius: 5,
+                    fill: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'BZ Werte @this.Model.DayQueryParameter'
+                },
+                tooltips: {
+                    mode: 'index'
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Uhrzeit'
+                        },
+                        type: 'category',
+                        ticks: {
+                            autoSkip: false,
+                            callback: function (label, index, labels) {
+                                if (index % 12 == 0) {
+                                    return label;
+                                }
+
+                                return null;
+                            }
+                        },
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'mg/dl'
+                        },
+                        ticks: {
+                            suggestedMin: 0,
+                            suggestedMax: @this.Model.SuggestedMaxValue,
+                        }
+                    }]
+                }
+            }
+        };
+
+        window.onload = function () {
+            var ctx = document.getElementById('canvas').getContext('2d');
+            window.myLine = new Chart(ctx, config);
+        };
+    </script>
+</body>
+</html>
