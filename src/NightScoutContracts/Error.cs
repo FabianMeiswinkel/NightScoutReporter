@@ -24,21 +24,5 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// </summary>
         [JsonProperty(PropertyName = "fields")]
         public object Fields { get; set; }
-
-        /// <summary>
-        /// Get the string presentation of the object
-        /// </summary>
-        /// <returns>String presentation of the object</returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.Append("class Error {\n");
-            sb.Append("  Code: ").Append(this.Code).Append("\n");
-            sb.Append("  Message: ").Append(this.Message).Append("\n");
-            sb.Append("  Fields: ").Append(this.Fields).Append("\n");
-            sb.Append("}\n");
-
-            return sb.ToString();
-        }
     }
 }

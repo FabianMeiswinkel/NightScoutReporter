@@ -78,27 +78,5 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// </summary>
         [JsonProperty(PropertyName = "rssi")]
         public decimal? Rssi { get; set; }
-
-        /// <summary>
-        /// Get the string presentation of the object
-        /// </summary>
-        /// <returns>String presentation of the object</returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.Append("class Entry {\n");
-            sb.Append("  Type: ").Append(this.Type).Append("\n");
-            sb.Append("  DateString: ").Append(this.DateString).Append("\n");
-            sb.Append("  Date: ").Append(this.Date).Append("\n");
-            sb.Append("  Sgv: ").Append(this.Sgv).Append("\n");
-            sb.Append("  Direction: ").Append(this.Direction).Append("\n");
-            sb.Append("  Noise: ").Append(this.Noise).Append("\n");
-            sb.Append("  Filtered: ").Append(this.Filtered).Append("\n");
-            sb.Append("  Unfiltered: ").Append(this.Unfiltered).Append("\n");
-            sb.Append("  Rssi: ").Append(this.Rssi).Append("\n");
-            sb.Append("}\n");
-
-            return sb.ToString();
-        }
     }
 }

@@ -58,24 +58,5 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         {
             get; set;
         }
-
-        /// <summary>
-        /// Get the string presentation of the object
-        /// </summary>
-        /// <returns>String presentation of the object</returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.Append("class Status {\n");
-            sb.Append("  ApiEnabled: ").Append(this.ApiEnabled).Append("\n");
-            sb.Append("  CareportalEnabled: ").Append(this.CareportalEnabled).Append("\n");
-            sb.Append("  Head: ").Append(this.Head).Append("\n");
-            sb.Append("  Name: ").Append(this.Name).Append("\n");
-            sb.Append("  Version: ").Append(this.Version).Append("\n");
-            sb.Append("  Settings: ").Append(this.Settings).Append("\n");
-            sb.Append("}\n");
-
-            return sb.ToString();
-        }
     }
 }

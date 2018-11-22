@@ -140,28 +140,5 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         {
             get; set;
         }
-
-        /// <summary>
-        /// Get the string presentation of the object
-        /// </summary>
-        /// <returns>String presentation of the object</returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.Append("class Treatment {\n");
-            sb.Append("  Id: ").Append(this.Id).Append("\n");
-            sb.Append("  EventType: ").Append(this.EventType).Append("\n");
-            sb.Append("  CreatedAt: ").Append(this.CreatedAt).Append("\n");
-            sb.Append("  Glucose: ").Append(this.Glucose).Append("\n");
-            sb.Append("  GlucoseType: ").Append(this.GlucoseType).Append("\n");
-            sb.Append("  Carbs: ").Append(this.Carbs).Append("\n");
-            sb.Append("  Insulin: ").Append(this.Insulin).Append("\n");
-            sb.Append("  Units: ").Append(this.Units).Append("\n");
-            sb.Append("  Notes: ").Append(this.Notes).Append("\n");
-            sb.Append("  EnteredBy: ").Append(this.EnteredBy).Append("\n");
-            sb.Append("}\n");
-
-            return sb.ToString();
-        }
     }
 }

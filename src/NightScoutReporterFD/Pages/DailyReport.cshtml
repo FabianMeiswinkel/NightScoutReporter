@@ -36,7 +36,7 @@
         var warningLows = [@this.Model.WarningLows];
         var warningHighs = [@this.Model.WarningHighs];
         var inTargets = [@this.Model.InTargets];
-        var config = {
+        var glucoseConfig = {
             type: 'line',
             data: {
                 labels: [@this.Model.TimeLineLabels],
@@ -116,6 +116,17 @@
                 tooltips: {
                     mode: 'index'
                 },
+                legend: {
+                    labels: {
+                        filter: function (chart, legendItem) {
+                            if (chart.datasetIndex > 4) {
+                                return legendItem;
+                            }
+
+                            return null;
+                        }
+                    },
+                },
                 scales: {
                     xAxes: [{
                         display: true,
@@ -152,7 +163,7 @@
 
         window.onload = function () {
             var ctx = document.getElementById('canvas').getContext('2d');
-            window.myLine = new Chart(ctx, config);
+            window.glucoseLineChart = new Chart(ctx, glucoseConfig);
         };
     </script>
 </body>

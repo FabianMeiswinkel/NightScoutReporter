@@ -193,37 +193,5 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         {
             get; set;
         }
-
-        /// <summary>
-        /// Get the string presentation of the object
-        /// </summary>
-        /// <returns>String presentation of the object</returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            sb.Append("class Settings {\n");
-            sb.Append("  Units: ").Append(this.Units).Append("\n");
-            sb.Append("  TimeFormat: ").Append(this.TimeFormat).Append("\n");
-            sb.Append("  CustomTitle: ").Append(this.CustomTitle).Append("\n");
-            sb.Append("  NightMode: ").Append(this.NightMode).Append("\n");
-            sb.Append("  Theme: ").Append(this.Theme).Append("\n");
-            sb.Append("  Language: ").Append(this.Language).Append("\n");
-            sb.Append("  ShowPlugins: ").Append(this.ShowPlugins).Append("\n");
-            sb.Append("  ShowRawbg: ").Append(this.ShowRawbg).Append("\n");
-            sb.Append("  AlarmTypes: ").Append(this.AlarmTypes).Append("\n");
-            sb.Append("  AlarmUrgentHigh: ").Append(this.AlarmUrgentHigh).Append("\n");
-            sb.Append("  AlarmHigh: ").Append(this.AlarmHigh).Append("\n");
-            sb.Append("  AlarmLow: ").Append(this.AlarmLow).Append("\n");
-            sb.Append("  AlarmUrgentLow: ").Append(this.AlarmUrgentLow).Append("\n");
-            sb.Append("  AlarmTimeagoWarn: ").Append(this.AlarmTimeagoWarn).Append("\n");
-            sb.Append("  AlarmTimeagoWarnMins: ").Append(this.AlarmTimeagoWarnMins).Append("\n");
-            sb.Append("  AlarmTimeagoUrgent: ").Append(this.AlarmTimeagoUrgent).Append("\n");
-            sb.Append("  AlarmTimeagoUrgentMins: ").Append(this.AlarmTimeagoUrgentMins).Append("\n");
-            sb.Append("  Enable: ").Append(this.Enable).Append("\n");
-            sb.Append("  Thresholds: ").Append(this.Thresholds).Append("\n");
-            sb.Append("}\n");
-
-            return sb.ToString();
-        }
     }
 }
