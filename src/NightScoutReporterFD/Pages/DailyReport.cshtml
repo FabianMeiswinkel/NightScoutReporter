@@ -24,9 +24,12 @@
     <h1>Hello World</h1>
     <h2>@this.Model.DayQueryParameter</h2>
     <div style="width:75%;">
-        <canvas id="canvas"></canvas>
+        <canvas id="canvasGlucose"></canvas>
     </div>
     <br>
+    <div style="width:75%;">
+        <canvas id="canvasBasalRate"></canvas>
+    </div>
     <br>
     <script>
         var sgvs = [@this.Model.SerumGlucoseValues];
@@ -36,10 +39,12 @@
         var warningLows = [@this.Model.WarningLows];
         var warningHighs = [@this.Model.WarningHighs];
         var inTargets = [@this.Model.InTargets];
+        var targetBasalRates = [@this.Model.TargetBasalRates];
+        var actualBasalRates = [@this.Model.ActualBasalRates];
         var glucoseConfig = {
             type: 'line',
             data: {
-                labels: [@this.Model.TimeLineLabels],
+                labels: [@this.Model.TimeLineLabels5M],
                 datasets: [ {
                     label: 'CriticalLow',
                     data: criticalLows,
@@ -95,7 +100,8 @@
                     pointRadius: 2,
                     pointStyle: 'point',
                     fill: false,
-                    cubicInterpolationMode: 'monotone'
+                    cubicInterpolationMode: 'monotone',
+                    spanGaps: false,
                 }, {
                     label: 'Messgerät',
                     data: mbgvs,
@@ -105,6 +111,7 @@
                     pointBackgroundColor: 'rgba(0, 0, 255, 1)',
                     pointRadius: 5,
                     fill: false,
+                    spanGaps: false,
                 }]
             },
             options: {
@@ -154,7 +161,77 @@
                         },
                         ticks: {
                             suggestedMin: 0,
-                            suggestedMax: @this.Model.SuggestedMaxValue,
+                            suggestedMax: @this.Model.SuggestedMaxGlucoseValue,
+                        }
+                    }]
+                }
+            }
+        };
+
+        var basalRateConfig = {
+            type: 'line',
+            data: {
+                labels: [@this.Model.TimeLineLabels1M],
+                datasets: [ {
+                    label: 'Geplante Basalrate',
+                    data: targetBasalRates,
+                    borderColor: 'rgba(0, 0, 0, 1)',
+                    borderDash: [3, 3],
+                    pointBorderColor: 'rgba(0, 0, 0, 1)',
+                    pointBackgroundColor: 'rgba(0, 0, 0, 1)',
+                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                    pointRadius: 0,
+                    pointStyle: 'point',
+                    fill: false,
+                    cubicInterpolationMode: 'monotone'
+                }, {
+                    label: 'Aktuelle Basalrate',
+                    data: actualBasalRates,
+                    borderColor: 'rgba(0, 0, 255, 1)',
+                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                    pointStyle: 'point',
+                    pointBackgroundColor: 'rgba(0, 0, 255, 1)',
+                    pointRadius: 0,
+                    fill: false,
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: 'Basalrate @this.Model.DayQueryParameter'
+                },
+                tooltips: {
+                    mode: 'index'
+                },
+                scales: {
+                    xAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Uhrzeit'
+                        },
+                        type: 'category',
+                        ticks: {
+                            autoSkip: false,
+                            callback: function (label, index, labels) {
+                                if (index % 60 == 0) {
+                                    return label;
+                                }
+
+                                return null;
+                            }
+                        },
+                    }],
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'IE/h'
+                        },
+                        ticks: {
+                            suggestedMin: 0,
+                            suggestedMax: @this.Model.SuggestedMaxBasalRateValue,
                         }
                     }]
                 }
@@ -162,8 +239,11 @@
         };
 
         window.onload = function () {
-            var ctx = document.getElementById('canvas').getContext('2d');
+            var ctx = document.getElementById('canvasGlucose').getContext('2d');
             window.glucoseLineChart = new Chart(ctx, glucoseConfig);
+
+            ctx = document.getElementById('canvasBasalRate').getContext('2d');
+            window.basalRateLineChart = new Chart(ctx, basalRateConfig);
         };
     </script>
 </body>

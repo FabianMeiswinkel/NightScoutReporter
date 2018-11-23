@@ -42,6 +42,12 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
             get; set;
         }
 
+        [JsonProperty(PropertyName = "duration")]
+        public int? Duration
+        {
+            get; set;
+        }
+
         /// <summary>
         /// Who entered the treatment.
         /// </summary>
@@ -119,6 +125,12 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// </summary>
         [JsonProperty(PropertyName = "notes")]
         public string Notes
+        {
+            get; set;
+        }
+
+        [JsonProperty(PropertyName = "percent")]
+        public decimal? Percent
         {
             get; set;
         }

@@ -56,6 +56,17 @@ namespace NightScoutReporterTests
         }
 
         [TestMethod]
+        public async Task GetDefaultProfileSucceeds()
+        {
+            using (var client = new NightScoutClient(BaseUri, TemporaryToken, Log))
+            {
+                Profile profile = await client.GetDefaultProfileAsync(CancellationToken.None);
+
+                Assert.IsNotNull(profile, nameof(profile));
+            }
+        }
+
+        [TestMethod]
         public async Task GetTreatmentSucceeds()
         {
             using (var client = new NightScoutClient(BaseUri, TemporaryToken, Log))

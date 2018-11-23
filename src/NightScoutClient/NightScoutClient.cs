@@ -12,6 +12,8 @@ using Meiswinkel.NightScoutReporter.NightScoutCommon;
 using Meiswinkel.NightScoutReporter.NightScoutContracts;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using TimeZoneMapper;
 
 namespace Meiswinkel.NightScoutReporter.NightScoutClient
 {
@@ -176,6 +178,34 @@ namespace Meiswinkel.NightScoutReporter.NightScoutClient
             return result;
         }
         #endregion GetEntries
+
+        public async Task<Profile> GetDefaultProfileAsync(
+            CancellationToken cancellationToken)
+        {
+            var uriBuilder = new UriBuilder(this.baseUri)
+            {
+                Path = "/api/v1/profile.json"
+            };
+
+            if (!String.IsNullOrWhiteSpace(this.token))
+            {
+                uriBuilder.SetQueryParam("token", this.token);
+            }
+
+            ProfilesOverview overview = (await this.GetInternalAsync<ProfilesOverview>(cancellationToken, uriBuilder)).Single();
+            Console.WriteLine(overview.Id);
+            Console.WriteLine(overview.Store);
+
+            Profile profile = overview.Store.GetValue(overview.DefaultProfile).ToObject<Profile>();
+            profile.Timezone = TimeZoneMap.OnlineWithFallbackValuesTZMapper.MapTZID(profile.TimezoneId);
+
+            Console.WriteLine(profile.Id);
+            Console.WriteLine(profile.Units);
+            Console.WriteLine(profile.Timezone);
+            Console.WriteLine(profile.TimezoneId);
+
+            return profile;
+        }
 
         #region GetTreatments
         public async Task<IList<Treatment>> GetTreatmentsAsync(
