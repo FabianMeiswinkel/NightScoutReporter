@@ -12,6 +12,25 @@
     <title>DailyReport</title>
     <script src="../lib/Chart.js/Chart.bundle.js"></script>
     <script src="../lib/utils.js"></script>
+    <style type="text/css">
+        body {
+        margin: 0;
+        padding: 0;
+        font: 12pt "Tahoma";
+    }
+    * {
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+    }
+    .page {
+        width: 21cm;
+        min-height: 29.7cm;
+        padding: 0cm;
+    }
+    .subpage {
+        height: 256mm;
+    }
+    </style>
     <style>
         canvas {
             -moz-user-select: none;
@@ -21,24 +40,25 @@
     </style>
 </head>
 <body>
-    <h1>Hello World</h1>
-    <h2>@this.Model.DayQueryParameter</h2>
-    <div style="width:75%;">
-        <canvas id="canvasGlucose"></canvas>
-    </div>
-    <br>
-    <div style="width:75%;">
-        <canvas id="canvasBasalRate"></canvas>
-    </div>
-    <br>
-    <script>
+    <div class="book">
+        <div class="page">
+            <div class="subpage">
+                <h1 style="font-size: large">Protokoll vom @this.Model.DayQueryParameter</h1>
+                <div style="width:100%; height: 9cm">
+                    <canvas id="canvasGlucose"></canvas>
+                </div>
+                <br>
+                <div style="width:100%; height: 6cm">
+                    <canvas id="canvasBasalRate"></canvas>
+                </div>
+                <script>
         var sgvs = [@this.Model.SerumGlucoseValues];
         var mbgvs = [@this.Model.MeterBloodGlucoseValues];
-        var criticalLows = [@this.Model.CriticalLows];
-        var criticalHighs = [@this.Model.CriticalHighs];
-        var warningLows = [@this.Model.WarningLows];
-        var warningHighs = [@this.Model.WarningHighs];
-        var inTargets = [@this.Model.InTargets];
+        var criticalLows = Array(12 * 24).fill(@NightScoutReporterFD.Pages.DailyReportModel.CriticalLow);
+        var criticalHighs = Array(12 * 24).fill(@this.Model.CriticalHigh);
+        var warningLows = Array(12 * 24).fill(@NightScoutReporterFD.Pages.DailyReportModel.WarningLow);
+        var warningHighs = Array(12 * 24).fill(@this.Model.WarningHigh);
+        var inTargets = Array(12 * 24).fill(@NightScoutReporterFD.Pages.DailyReportModel.InTarget);
         var targetBasalRates = [@this.Model.TargetBasalRates];
         var actualBasalRates = [@this.Model.ActualBasalRates];
         var glucoseConfig = {
@@ -115,9 +135,10 @@
                 }]
             },
             options: {
+                maintainAspectRatio: false,
                 responsive: true,
                 title: {
-                    display: true,
+                    display: false,
                     text: 'BZ Werte @this.Model.DayQueryParameter'
                 },
                 tooltips: {
@@ -138,7 +159,7 @@
                     xAxes: [{
                         display: true,
                         scaleLabel: {
-                            display: true,
+                            display: false,
                             labelString: 'Uhrzeit'
                         },
                         type: 'category',
@@ -157,11 +178,11 @@
                         display: true,
                         scaleLabel: {
                             display: true,
-                            labelString: 'mg/dl'
+                            labelString: 'BZ Werte vom @this.Model.DayQueryParameter in mg/dl',
                         },
                         ticks: {
                             suggestedMin: 0,
-                            suggestedMax: @this.Model.SuggestedMaxGlucoseValue,
+                            suggestedMax: [@this.Model.SuggestedMaxGlucoseValue],
                         }
                     }]
                 }
@@ -196,9 +217,10 @@
                 }]
             },
             options: {
+                maintainAspectRatio: false,
                 responsive: true,
                 title: {
-                    display: true,
+                    display: false,
                     text: 'Basalrate @this.Model.DayQueryParameter'
                 },
                 tooltips: {
@@ -208,7 +230,7 @@
                     xAxes: [{
                         display: true,
                         scaleLabel: {
-                            display: true,
+                            display: false,
                             labelString: 'Uhrzeit'
                         },
                         type: 'category',
@@ -227,7 +249,7 @@
                         display: true,
                         scaleLabel: {
                             display: true,
-                            labelString: 'IE/h'
+                            labelString: 'Basalrate vom @this.Model.DayQueryParameter in IE/h'
                         },
                         ticks: {
                             suggestedMin: 0,
@@ -245,6 +267,9 @@
             ctx = document.getElementById('canvasBasalRate').getContext('2d');
             window.basalRateLineChart = new Chart(ctx, basalRateConfig);
         };
-    </script>
+                </script>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

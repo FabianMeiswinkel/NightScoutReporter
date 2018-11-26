@@ -16,16 +16,15 @@ namespace NightScoutReporterFD.Pages
 {
     public class DailyReportModel : PageModel
     {
+        public const string CriticalLow = "55";
+        public const string WarningLow = "70";
+        public const string InTarget = "160";
+
         private readonly ILogger<DailyReportModel> logger;
         private readonly string[] timeLineLabels5M = new string[12 * 24];
         private readonly string[] timeLineLabels1M = new string[60 * 24];
         private readonly string[] mbgvs = new string[12 * 24];
         private readonly string[] sgvs = new string[12 * 24];
-        private readonly string[] criticalLows = new string[12 * 24];
-        private readonly string[] criticalHighs = new string[12 * 24];
-        private readonly string[] warningLows = new string[12 * 24];
-        private readonly string[] warningHighs = new string[12 * 24];
-        private readonly string[] inTargets = new string[12 * 24];
         private readonly string[] targetBasalRateValues = new string[60 * 24];
         private readonly string[] actualBasalRateValues = new string[60 * 24];
 
@@ -50,31 +49,6 @@ namespace NightScoutReporterFD.Pages
         }
 
         public string MeterBloodGlucoseValues
-        {
-            get; set;
-        }
-
-        public string CriticalHighs
-        {
-            get; set;
-        }
-
-        public string CriticalLows
-        {
-            get; set;
-        }
-
-        public string WarningLows
-        {
-            get; set;
-        }
-
-        public string WarningHighs
-        {
-            get; set;
-        }
-
-        public string InTargets
         {
             get; set;
         }
@@ -107,6 +81,46 @@ namespace NightScoutReporterFD.Pages
         public decimal SuggestedMaxBasalRateValue
         {
             get; set;
+        }
+
+        public string CriticalHigh
+        {
+            get; set;
+        }
+
+        public string WarningHigh
+        {
+            get; set;
+        }
+
+        private static void SetBloodGlucoseLevels(
+            DateTimeOffset parsedDay,
+            IList<Entry> entries,
+            string entryType,
+            Func<Entry, decimal?> getGlucoseValue,
+            string[] values,
+            ref decimal suggestedMaxGlucoseValue)
+        {
+            foreach (Entry entry in entries.Where((e) => e.Type == entryType))
+            {
+                if (entry.Date == null || getGlucoseValue(entry) == null)
+                {
+                    continue;
+                }
+
+                var date = DateTimeOffset.FromUnixTimeMilliseconds(entry.Date.Value);
+                int minutesFromMidnight = (int)(date - parsedDay).TotalMinutes;
+
+                int index = minutesFromMidnight / 5;
+
+                decimal glucoseValue = getGlucoseValue(entry).Value;
+                values[index] = glucoseValue.ToString("###.##");
+
+                if (glucoseValue > suggestedMaxGlucoseValue)
+                {
+                    suggestedMaxGlucoseValue = glucoseValue;
+                }
+            }
         }
 
         public async Task OnGetAsync()
@@ -184,66 +198,30 @@ namespace NightScoutReporterFD.Pages
 
                     decimal suggestedMaxGlucoseValue = 180;
 
-                    foreach (Entry sgvEntry in entries.Where((e) => e.Type == "sgv"))
-                    {
-                        if (sgvEntry.Date == null || sgvEntry.Sgv == null)
-                        {
-                            continue;
-                        }
+                    SetBloodGlucoseLevels(
+                        parsedDay,
+                        entries,
+                        entryType: "sgv",
+                        getGlucoseValue: new Func<Entry, decimal?>(e => e.Sgv),
+                        values:  this.sgvs,
+                        suggestedMaxGlucoseValue: ref suggestedMaxGlucoseValue);
 
-                        var date = DateTimeOffset.FromUnixTimeMilliseconds(sgvEntry.Date.Value);
-                        int minutesFromMidnight = (int)(date - parsedDay).TotalMinutes;
-
-                        int index = minutesFromMidnight / 5;
-
-                        this.sgvs[index] = sgvEntry.Sgv.Value.ToString("###.##");
-
-                        if (sgvEntry.Sgv.Value > suggestedMaxGlucoseValue)
-                        {
-                            suggestedMaxGlucoseValue = sgvEntry.Sgv.Value;
-                        }
-                    }
-
-                    foreach (Entry mbgEntry in entries.Where((e) => e.Type == "mbg"))
-                    {
-                        if (mbgEntry.Date == null || mbgEntry.Mbg == null)
-                        {
-                            continue;
-                        }
-
-                        var date = DateTimeOffset.FromUnixTimeMilliseconds(mbgEntry.Date.Value);
-                        int minutesFromMidnight = (int)(date - parsedDay).TotalMinutes;
-
-                        int index = minutesFromMidnight / 5;
-
-                        this.mbgvs[index] = mbgEntry.Mbg.Value.ToString("###.##");
-
-                        if (mbgEntry.Mbg.Value > suggestedMaxGlucoseValue)
-                        {
-                            suggestedMaxGlucoseValue = mbgEntry.Mbg.Value;
-                        }
-                    }
+                    SetBloodGlucoseLevels(
+                        parsedDay,
+                        entries,
+                        entryType: "mbg",
+                        getGlucoseValue: new Func<Entry, decimal?>(e => e.Mbg),
+                        values: this.mbgvs,
+                        suggestedMaxGlucoseValue: ref suggestedMaxGlucoseValue);
 
                     suggestedMaxGlucoseValue = ((int)((suggestedMaxGlucoseValue * 1.1m) / 10)) * 10 + 10;
 
-                    for (int i = 0; i < 12 * 24; i++)
-                    {
-                        this.criticalLows[i] = "55";
-                        this.warningLows[i] = "70";
-                        this.inTargets[i] = "160";
-                        this.warningHighs[i] = Math.Min(240, suggestedMaxGlucoseValue).ToString("###.##");
-                        this.criticalHighs[i] = suggestedMaxGlucoseValue.ToString("###.##");
-                    }
-
+                    this.WarningHigh = Math.Min(240, suggestedMaxGlucoseValue).ToString("###.##");
+                    this.CriticalHigh = suggestedMaxGlucoseValue.ToString("###.##");
                     this.SuggestedMaxGlucoseValue = suggestedMaxGlucoseValue;
 
                     this.SerumGlucoseValues = String.Join(',', this.sgvs);
                     this.MeterBloodGlucoseValues = String.Join(',', this.mbgvs);
-                    this.CriticalLows = String.Join(',', this.criticalLows);
-                    this.WarningLows = String.Join(',', this.warningLows);
-                    this.InTargets = String.Join(',', this.inTargets);
-                    this.WarningHighs = String.Join(',', this.warningHighs);
-                    this.CriticalHighs = String.Join(',', this.criticalHighs);
                     this.TimeLineLabels5M = new HtmlString(String.Join(',', this.timeLineLabels5M));
 
                     for (int i = 0; i < 60 * 24; i++)
