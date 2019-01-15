@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Meiswinkel.NightScoutReporter.NightScoutClient;
 using Meiswinkel.NightScoutReporter.NightScoutContracts;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using static System.FormattableString;
 
 namespace NightScoutReporterFD.Pages
 {
@@ -69,6 +70,16 @@ namespace NightScoutReporterFD.Pages
         }
 
         public HtmlString ActualBasalRates
+        {
+            get; set;
+        }
+
+        public HtmlString DailySummary
+        {
+            get; set;
+        }
+
+        public HtmlString Meals
         {
             get; set;
         }
@@ -299,6 +310,72 @@ namespace NightScoutReporterFD.Pages
                     this.TimeLineLabels1M = new HtmlString(String.Join(',', this.timeLineLabels1M));
                     this.TargetBasalRates = new HtmlString(String.Join(',', this.targetBasalRateValues));
                     this.ActualBasalRates = new HtmlString(String.Join(',', this.actualBasalRateValues));
+
+                    var eventTypes = new HashSet<string>(
+                        treatments.Select(t => t.EventType));
+
+                    this.DailySummary = new HtmlString(String.Join(',', eventTypes));
+
+                    List<MealBolusTreatment> mealBoulsTreatments = ToMealBolusTreatments(treatments);
+                    var sb = new StringBuilder();
+
+                    if (mealBoulsTreatments.Count > 0)
+                    {
+                        sb.Append("<table>")
+                            .Append("<tr>")
+                            .Append("<th width='15%' align='left'>Uhrzeit</th>")
+                            .Append("<th width='15%' align='right'>BG (in mg/dl)</th>")
+                            .Append("<th width='15%' align='right'>KH (in g)</th>")
+                            .Append("<th width='25%' align='right'>IE (+/- Korrektur)</th>")
+                            .Append("<th width='15%' align='right'>COB (in g)</th>")
+                            .Append("<th width='15%' align='right'>IOB (in IE)</th>")
+                            .Append("</tr>");
+
+                        foreach (MealBolusTreatment t in mealBoulsTreatments)
+                        {
+                            string insulinText = String.Empty;
+
+                            if (t.Insulin != null)
+                            {
+                                if (t.InsulinCorrection != null)
+                                {
+                                    insulinText = String.Format(
+                                        CultureInfo.InvariantCulture,
+                                        "{0} [{1}]",
+                                        t.Insulin.Value.ToString("###0.00"),
+                                        t.InsulinCorrection.Value.ToString("###0.00"));
+                                }
+                                else
+                                {
+                                    insulinText = t.Insulin.Value.ToString("###0.00");
+                                }
+                            }
+
+                            sb
+                            .Append("<tr>")
+                            .Append("<td align='left' style='font-weight:bold'>").Append(t.CreatedAt.Substring(11, 8)).Append("</td>")
+                            .Append("<td align='right'>")
+                                .Append(t.BG != null ? t.BG.Value.ToString("###0") : String.Empty).Append("</td>")
+                            .Append("<td align='right'>")
+                                .Append(t.Carbs != null ?
+                                    t.Carbs.Value.ToString("###0") :
+                                    String.Empty).Append("</td>")
+                            .Append("<td align='right'>").Append(insulinText).Append("</td>")
+                            .Append("<td align='right'>")
+                                .Append(t.CarbsOnBoard != null ?
+                                    t.CarbsOnBoard.Value.ToString("###0") :
+                                    String.Empty).Append("</td>")
+                            .Append("<td align='right'>")
+                                .Append(t.InsulinOnBoard != null ?
+                                    t.InsulinOnBoard.Value.ToString("###0.00") :
+                                    String.Empty).Append("</td>")
+                            .Append("</tr>");
+                        }
+
+                        sb.Append("</table>");
+                    }
+
+                    this.Meals = new HtmlString(sb.ToString());
                 }
              }
             catch (Exception error)
@@ -306,6 +383,68 @@ namespace NightScoutReporterFD.Pages
                 this.logger.LogError(error, "Error in OnGet: {0}", error.ToString());
                 throw;
             }
+        }
+
+        private static List<MealBolusTreatment> ToMealBolusTreatments(IEnumerable<Treatment> treatments)
+        {
+            var returnValue = new List<MealBolusTreatment>();
+
+            IEnumerable<Treatment> relevantTreatments = treatments
+                .Where(t => t.EventType != null &&
+                    t.EnteredBy != "sync" &&
+                    (t.EventType.Contains("Bolus") || t.EventType.Contains("Meal") || t.EventType.Contains("Carb")))
+                .OrderBy(t => t.CreatedAt);
+
+            foreach (Treatment t in relevantTreatments)
+            {
+                long startThreshold =
+                    DateTimeOffset.Parse(t.CreatedAt).AddMinutes(-10).ToUnixTimeMilliseconds();
+
+                long endThreshold =
+                    DateTimeOffset.Parse(t.CreatedAt).AddMinutes(10).ToUnixTimeMilliseconds();
+
+
+                if (t.BolusCalculation == null &&
+                    relevantTreatments.Any(
+                        c => c.BolusCalculation != null &&
+                        c.BolusCalculation.Carbs == t.Carbs &&
+                        c.BolusCalculation.EventTime.ToUnixTimeMilliseconds() >= startThreshold &&
+                        c.BolusCalculation.EventTime.ToUnixTimeMilliseconds() <= endThreshold))
+                {
+                    continue;
+                }
+
+                var mealOrBolus = new MealBolusTreatment
+                {
+                    BG = t.Glucose,
+                    Carbs = t.Carbs,
+                    Insulin = t.Insulin,
+                    CreatedAt = t.CreatedAt,
+                };
+
+                if (t.BolusCalculation != null)
+                {
+                    mealOrBolus.CarbsOnBoard = t.BolusCalculation.CarbsOnBoard;
+                    mealOrBolus.InsulinForCarbs = t.BolusCalculation.InsulinForCarbs;
+                    mealOrBolus.InsulinOnBoard = t.BolusCalculation.InsulinOnBoard;
+                    mealOrBolus.InsulinSensitivityFactor = t.BolusCalculation.InsulinSensitivityFactor;
+                    mealOrBolus.InsulinToCarbRatio = t.BolusCalculation.InsulinToCarbRatio;
+
+                    if (mealOrBolus.Carbs == null)
+                    {
+                        mealOrBolus.Carbs = t.BolusCalculation.Carbs;
+                    }
+
+                    if (t.Insulin != null)
+                    {
+                        mealOrBolus.InsulinCorrection = t.Insulin.Value - t.BolusCalculation.InsulinForCarbs;
+                    }
+                }
+
+                returnValue.Add(mealOrBolus);
+            }
+
+            return returnValue;
         }
 
         private class TempBasal
@@ -321,6 +460,83 @@ namespace NightScoutReporterFD.Pages
             }
 
             public decimal Factor
+            {
+                get; set;
+            }
+        }
+
+        private class MealBolusTreatment
+        {
+            public string CreatedAt
+            {
+                get;set;
+            }
+
+            public decimal? BG
+            {
+                get; set;
+            }
+
+            public decimal? Carbs
+            {
+                get; set;
+            }
+
+            public decimal? CarbsOnBoard
+            {
+                get; set;
+            }
+
+            /// <summary>
+            /// DIA (oder auch "Insulin-End-Time") DIA steht für "duration of insulin action", gibt also an, wie lange
+            /// das Insulin im Körper aktiv ist. Bei vielen ist zwar nach 3-4 Stunden die Hauptwirkung vorbei und die
+            /// Restemenge eher gering. Deswegen wird in der Praxis oder bei Bolusrechnern mit linearer
+            /// Insulinwirkkurve häufig ein solcher Wert verwendet. Diese Restmenge kann sich dann z.B. beim Sport
+            /// doch noch bemerkbar machen. AndroidAPS verwendet physiologischere Kurven und kann auch diese
+            /// Restmengen gut berechnen. Besonders bei der Überlagerung vieler einzelner Aktionen ist dies wichtig.
+            /// Daher verwendet AndroidAPS minimum 5 Stunden als DIA. Wichtiger als die exakte Länge des DIA ist das
+            /// Wirkmaximum das durch Auswahl des korrekten Wirk-Profils festgelegt wird, solange der DIA genügend
+            /// groß ist.
+            /// </summary>
+            //public decimal? DurationOfInsulinAction
+            //{
+            //    get; set;
+            //}
+
+            /// <summary>
+            /// IC Der IC (Insulin-Carb-Ratio - Insulin-Kohlenhydrat-Faktor) bestimmt, wieviel Gramm Kohlenhydrate
+            /// durch 1 IE Insulin abgedeckt werden.
+            /// </summary>
+            public decimal? InsulinToCarbRatio
+            {
+                get; set;
+            }
+
+            public decimal? Insulin
+            {
+                get; set;
+            }
+
+            public decimal? InsulinForCarbs
+            {
+                get; set;
+            }
+
+            public decimal? InsulinCorrection
+            {
+                get; set;
+            }
+
+            public decimal? InsulinOnBoard
+            {
+                get; set;
+            }
+
+            /// <summary>
+            /// ISF Der Insulinsensitivitätsfaktor (ISF) gibt an, um wie viele mg/dl oder mmol/l der
+            /// BZ-Wert durch 1 IE Insulin gesenkt wird.
+            /// </summary>
+            public decimal? InsulinSensitivityFactor
             {
                 get; set;
             }

@@ -18,6 +18,17 @@
         padding: 0;
         font: 12pt "Tahoma";
     }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    td, th {
+        border: 1px solid black;
+        padding: 1px;
+    }
+    tr:nth-child(even) {
+        background-color: #dddddd;
+    }
     * {
         box-sizing: border-box;
         -moz-box-sizing: border-box;
@@ -50,6 +61,14 @@
                 <br>
                 <div style="width:100%; height: 6cm">
                     <canvas id="canvasBasalRate"></canvas>
+                </div>
+                <br>
+                <div style="width:100%;">
+                    <p>@this.Model.Meals</p>
+                </div>
+                <br>
+                <div style="width:100%;">
+                    <p>@this.Model.DailySummary</p>
                 </div>
                 <script>
         var sgvs = [@this.Model.SerumGlucoseValues];
