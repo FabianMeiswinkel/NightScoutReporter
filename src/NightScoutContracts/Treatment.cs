@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -7,52 +8,10 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
     public class Treatment
     {
         /// <summary>
-        /// Details of the bolus calculation
+        /// Internally assigned id.
         /// </summary>
-        [JsonProperty(PropertyName = "boluscalc")]
-        public BolusCalculation BolusCalculation
-        {
-            get; set;
-        }
-
-        /// <summary>
-        /// Number of carbs.
-        /// </summary>
-        [JsonProperty(PropertyName = "carbs")]
-        public decimal? Carbs
-        {
-            get; set;
-        }
-
-        /// <summary>
-        /// The date of the event, might be set retroactively .
-        /// </summary>
-        [JsonProperty(PropertyName = "created_at")]
-        public string CreatedAt
-        {
-            get; set;
-        }
-
-        /// <summary>
-        /// Epoch
-        /// </summary>
-        [JsonProperty(PropertyName = "date")]
-        public long? Date
-        {
-            get; set;
-        }
-
-        [JsonProperty(PropertyName = "duration")]
-        public int? Duration
-        {
-            get; set;
-        }
-
-        /// <summary>
-        /// Who entered the treatment.
-        /// </summary>
-        [JsonProperty(PropertyName = "enteredBy")]
-        public string EnteredBy
+        [JsonProperty(PropertyName = "_id", NullValueHandling = NullValueHandling.Ignore)]
+        public string Id
         {
             get; set;
         }
@@ -60,8 +19,17 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// The type of treatment event.
         /// </summary>
-        [JsonProperty(PropertyName = "eventType")]
+        [JsonProperty(PropertyName = "eventType", NullValueHandling = NullValueHandling.Ignore)]
         public string EventType
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// The date of the event, might be set retroactively .
+        /// </summary>
+        [JsonProperty(PropertyName = "created_at", NullValueHandling = NullValueHandling.Ignore)]
+        public string CreatedAt
         {
             get; set;
         }
@@ -69,26 +37,43 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// Current glucose.
         /// </summary>
-        [JsonProperty(PropertyName = "glucose")]
-        public decimal? Glucose
+        [JsonProperty(PropertyName = "glucose", NullValueHandling = NullValueHandling.Ignore)]
+        public string GlucoseJsonText
         {
             get; set;
         }
 
         /// <summary>
+        /// Current glucose.
+        /// </summary>
+        [JsonIgnore]
+        public decimal? Glucose
+        {
+            get
+            {
+                if (String.IsNullOrWhiteSpace(this.GlucoseJsonText))
+                {
+                    return null;
+                }
+
+                return Decimal.Parse(this.GlucoseJsonText, CultureInfo.InvariantCulture);
+            }
+        }
+
+        /// <summary>
         /// Method used to obtain glucose, Finger or Sensor.
         /// </summary>
-        [JsonProperty(PropertyName = "glucoseType")]
+        [JsonProperty(PropertyName = "glucoseType", NullValueHandling = NullValueHandling.Ignore)]
         public string GlucoseType
         {
             get; set;
         }
 
         /// <summary>
-        /// Internally assigned id.
+        /// Number of carbs.
         /// </summary>
-        [JsonProperty(PropertyName = "_id")]
-        public string Id
+        [JsonProperty(PropertyName = "carbs", NullValueHandling = NullValueHandling.Ignore)]
+        public decimal? Carbs
         {
             get; set;
         }
@@ -96,16 +81,67 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// Amount of insulin, if any.
         /// </summary>
-        [JsonProperty(PropertyName = "insulin")]
+        [JsonProperty(PropertyName = "insulin", NullValueHandling = NullValueHandling.Ignore)]
         public decimal? Insulin
         {
             get; set;
         }
 
         /// <summary>
+        /// The units for the glucose value, mg/dl or mmol.
+        /// </summary>
+        [JsonProperty(PropertyName = "units", NullValueHandling = NullValueHandling.Ignore)]
+        public string Units
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// Description/notes of treatment.
+        /// </summary>
+        [JsonProperty(PropertyName = "notes", NullValueHandling = NullValueHandling.Ignore)]
+        public string Notes
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// Who entered the treatment.
+        /// </summary>
+        [JsonProperty(PropertyName = "enteredBy", NullValueHandling = NullValueHandling.Ignore)]
+        public string EnteredBy
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// Details of the bolus calculation
+        /// </summary>
+        [JsonProperty(PropertyName = "boluscalc", NullValueHandling = NullValueHandling.Ignore)]
+        public BolusCalculation BolusCalculation
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// Epoch
+        /// </summary>
+        [JsonProperty(PropertyName = "date", NullValueHandling = NullValueHandling.Ignore)]
+        public long? Date
+        {
+            get; set;
+        }
+
+        [JsonProperty(PropertyName = "duration", NullValueHandling = NullValueHandling.Ignore)]
+        public int? Duration
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// Amount of insulin, if any.
         /// </summary>
-        [JsonProperty(PropertyName = "isSMB")]
+        [JsonProperty(PropertyName = "isSMB", NullValueHandling = NullValueHandling.Ignore, DefaultValueHandling = DefaultValueHandling.Ignore)]
         public bool IsSuperMicroBolus
         {
             get;set;
@@ -114,22 +150,13 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// Identifier of the NightScout client instance
         /// </summary>
-        [JsonProperty(PropertyName = "NSCLIENT_ID")]
+        [JsonProperty(PropertyName = "NSCLIENT_ID", NullValueHandling = NullValueHandling.Ignore)]
         public string NightScoutClientId
         {
             get; set;
         }
 
-        /// <summary>
-        /// Description/notes of treatment.
-        /// </summary>
-        [JsonProperty(PropertyName = "notes")]
-        public string Notes
-        {
-            get; set;
-        }
-
-        [JsonProperty(PropertyName = "percent")]
+        [JsonProperty(PropertyName = "percent", NullValueHandling = NullValueHandling.Ignore)]
         public decimal? Percent
         {
             get; set;
@@ -138,17 +165,8 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// Identifier of the pump
         /// </summary>
-        [JsonProperty(PropertyName = "pumpId")]
+        [JsonProperty(PropertyName = "pumpId", NullValueHandling = NullValueHandling.Ignore)]
         public string PumpId
-        {
-            get; set;
-        }
-
-        /// <summary>
-        /// The units for the glucose value, mg/dl or mmol.
-        /// </summary>
-        [JsonProperty(PropertyName = "units")]
-        public string Units
         {
             get; set;
         }

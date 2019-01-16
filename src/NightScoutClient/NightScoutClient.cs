@@ -87,6 +87,70 @@ namespace Meiswinkel.NightScoutReporter.NightScoutClient
             return entries.FirstOrDefault();
         }
 
+        public async Task<Entry> InjectMeterBloodGlucoseValueAsync(
+            CancellationToken cancellationToken,
+            DateTimeOffset time,
+            uint glucose)
+        {
+            var uriBuilder = new UriBuilder(this.baseUri);
+
+            if (!String.IsNullOrWhiteSpace(this.token))
+            {
+                uriBuilder.SetQueryParam("token", this.token);
+            }
+
+            uriBuilder.Path = "/api/v1/entries.json";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, uriBuilder.Uri))
+            {
+                var newMeterBloodGlucoseValues = new List<Entry>
+                {
+                    new Entry
+                    {
+                        DateString = time.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                        Date = time.ToUnixTimeMilliseconds(),
+                        Device = "NightScoutReporter",
+                        Mbg = glucose,
+                        SysTime = time.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                        Type = "mbg",
+                    }
+                };
+
+                string json = JsonConvert.SerializeObject(newMeterBloodGlucoseValues, jsonSettings);
+
+                request.Content = new StringContent(json);
+                request.Content.Headers.ContentType.MediaType = "application/json";
+
+                using (HttpResponseMessage response = await this.client.SendAsync(
+                    request,
+                    HttpCompletionOption.ResponseContentRead,
+                    cancellationToken))
+                {
+                    response.EnsureSuccessStatusCode();
+
+                    if (response.Content == null)
+                    {
+                        return null;
+                    }
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    if (String.IsNullOrWhiteSpace(responseBody))
+                    {
+                        return null;
+                    }
+
+                    this.log.LogDebug("REQUESTHEADERS: {0}", request.Headers);
+                    this.log.LogDebug("REQUESTURI: {0}", request.RequestUri);
+                    this.log.LogDebug("REQUEST: {0}", json);
+                    this.log.LogDebug("RESPONSEHEADERS: {0}", response.Headers);
+                    this.log.LogDebug("RESPONSE: {0}", responseBody);
+
+                    return JsonConvert.DeserializeObject<Entry[]>(responseBody, jsonSettings).SingleOrDefault();
+                }
+            }
+        }
+
         public Task<IList<Entry>> GetEntriesAsync(
             CancellationToken cancellationToken,
             DateTimeOffset? from,
@@ -289,6 +353,74 @@ namespace Meiswinkel.NightScoutReporter.NightScoutClient
             return result;
         }
         #endregion GetTreatments
+
+        #region SetDailySummaryTreatmentsAsync
+        public async Task<Treatment> SetDailySummaryTreatmentsAsync(
+            CancellationToken cancellationToken,
+            DateTimeOffset createdAt,
+            string notes)
+        {
+            var uriBuilder = new UriBuilder(this.baseUri)
+            {
+                Path = "/api/v1/treatments.json"
+            };
+
+            if (!String.IsNullOrWhiteSpace(this.token))
+            {
+                uriBuilder.SetQueryParam("token", this.token);
+            }
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, uriBuilder.Uri))
+            {
+                var newDailySummaries = new List<Treatment>
+                {
+                    new Treatment
+                    {
+                        EventType = "Note",
+                        CreatedAt = createdAt.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                        GlucoseJsonText = "100",
+                        GlucoseType = "Sensor",
+                        Units = "mg/dl",
+                        Notes = notes,
+                        EnteredBy = "NightScoutReporter",
+                    }
+                };
+
+                string json = JsonConvert.SerializeObject(newDailySummaries, jsonSettings);
+
+                request.Content = new StringContent(json);
+                request.Content.Headers.ContentType.MediaType = "application/json";
+
+                using (HttpResponseMessage response = await this.client.SendAsync(
+                    request,
+                    HttpCompletionOption.ResponseContentRead,
+                    cancellationToken))
+                {
+                    response.EnsureSuccessStatusCode();
+
+                    if (response.Content == null)
+                    {
+                        return null;
+                    }
+
+                    string responseBody = await response.Content.ReadAsStringAsync();
+
+                    if (String.IsNullOrWhiteSpace(responseBody))
+                    {
+                        return null;
+                    }
+
+                    this.log.LogDebug("REQUESTHEADERS: {0}", request.Headers);
+                    this.log.LogDebug("REQUESTURI: {0}", request.RequestUri);
+                    this.log.LogDebug("REQUEST: {0}", json);
+                    this.log.LogDebug("RESPONSEHEADERS: {0}", response.Headers);
+                    this.log.LogDebug("RESPONSE: {0}", responseBody);
+
+                    return JsonConvert.DeserializeObject<Treatment[]>(responseBody, jsonSettings).SingleOrDefault();
+                }
+            }
+        }
+        #endregion SetDailySummaryTreatmentsAsync
 
         private async Task<IList<T>> GetInternalAsync<T>(
             CancellationToken cancellationToken,

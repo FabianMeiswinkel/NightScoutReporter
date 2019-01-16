@@ -10,7 +10,7 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// Internally assigned id.
         /// </summary>
-        [JsonProperty(PropertyName = "_id")]
+        [JsonProperty(PropertyName = "_id", NullValueHandling = NullValueHandling.Ignore)]
         public string Id
         {
             get; set;
@@ -25,8 +25,17 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// dateString, prefer ISO `8601`
         /// </summary>
-        [JsonProperty(PropertyName = "dateString")]
+        [JsonProperty(PropertyName = "dateString", NullValueHandling = NullValueHandling.Ignore)]
         public string DateString { get; set; }
+
+        /// <summary>
+        /// dateString, prefer ISO `8601`
+        /// </summary>
+        [JsonProperty(PropertyName = "device", NullValueHandling = NullValueHandling.Ignore)]
+        public string Device
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Epoch
@@ -37,14 +46,14 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// The glucose reading. (only available for sgv types)
         /// </summary>
-        [JsonProperty(PropertyName = "sgv")]
-        public decimal? Sgv { get; set; }
+        [JsonProperty(PropertyName = "sgv", NullValueHandling = NullValueHandling.Ignore)]
+        public uint? Sgv { get; set; }
 
         /// <summary>
         /// The glucose reading. (only available for mbg types)
         /// </summary>
-        [JsonProperty(PropertyName = "mbg")]
-        public decimal? Mbg
+        [JsonProperty(PropertyName = "mbg", NullValueHandling = NullValueHandling.Ignore)]
+        public uint? Mbg
         {
             get; set;
         }
@@ -52,31 +61,40 @@ namespace Meiswinkel.NightScoutReporter.NightScoutContracts
         /// <summary>
         /// Direction of glucose trend reported by CGM. (only available for sgv types)
         /// </summary>
-        [JsonProperty(PropertyName = "direction")]
+        [JsonProperty(PropertyName = "direction", NullValueHandling = NullValueHandling.Ignore)]
         public string Direction { get; set; }
 
         /// <summary>
         /// Noise level at time of reading. (only available for sgv types)
         /// </summary>
-        [JsonProperty(PropertyName = "noise")]
+        [JsonProperty(PropertyName = "noise", NullValueHandling = NullValueHandling.Ignore)]
         public decimal? Noise { get; set; }
 
         /// <summary>
         /// The raw filtered value directly from CGM transmitter. (only available for sgv types)
         /// </summary>
-        [JsonProperty(PropertyName = "filtered")]
+        [JsonProperty(PropertyName = "filtered", NullValueHandling = NullValueHandling.Ignore)]
         public decimal? Filtered { get; set; }
+
+        /// <summary>
+        /// dateString, prefer ISO `8601`
+        /// </summary>
+        [JsonProperty(PropertyName = "sysTime", NullValueHandling = NullValueHandling.Ignore)]
+        public string SysTime
+        {
+            get; set;
+        }
 
         /// <summary>
         /// The raw unfiltered value directly from CGM transmitter. (only available for sgv types)
         /// </summary>
-        [JsonProperty(PropertyName = "unfiltered")]
+        [JsonProperty(PropertyName = "unfiltered", NullValueHandling = NullValueHandling.Ignore)]
         public decimal? Unfiltered { get; set; }
 
         /// <summary>
         /// The signal strength from CGM transmitter. (only available for sgv types)
         /// </summary>
-        [JsonProperty(PropertyName = "rssi")]
+        [JsonProperty(PropertyName = "rssi", NullValueHandling = NullValueHandling.Ignore)]
         public decimal? Rssi { get; set; }
     }
 }

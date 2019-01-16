@@ -58,18 +58,16 @@
                 <div style="width:100%; height: 9cm">
                     <canvas id="canvasGlucose"></canvas>
                 </div>
-                <br>
+                <br />
                 <div style="width:100%; height: 6cm">
                     <canvas id="canvasBasalRate"></canvas>
                 </div>
-                <br>
-                <div style="width:100%;">
-                    <p>@this.Model.Meals</p>
-                </div>
-                <br>
-                <div style="width:100%;">
-                    <p>@this.Model.DailySummary</p>
-                </div>
+                <br />
+                <div style="width:100%;">@this.Model.Meals</div>
+                <br />
+                <div style="width:100%;"><b>Bemerkung:</b><br /><p>@this.Model.DailySummary</p></div>
+                <br />
+                <div style="width:100%;" id="editableArea"><b>Bemerkung:</b><br /><p>@this.Model.DailySummary</p></div>
                 <script>
         var sgvs = [@this.Model.SerumGlucoseValues];
         var mbgvs = [@this.Model.MeterBloodGlucoseValues];

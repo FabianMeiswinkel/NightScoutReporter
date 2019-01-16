@@ -23,6 +23,7 @@ namespace NightScoutReporterTests
             name: "NightScoutClientTestsLogger",
             filter: null,
             includeScopes: true);
+        private static readonly Random rnd = new Random();
 
         [TestMethod]
         public async Task GetEntrySucceeds()
@@ -178,6 +179,124 @@ namespace NightScoutReporterTests
 
                 Console.WriteLine("OUTPUT: {0}", treatment);
             }
+        }
+
+        [TestMethod]
+        public async Task SetDailySummaryTreatmentSucceeds()
+        {
+            using (var client = new NightScoutClient(BaseUri, TemporaryToken, Log))
+            {
+                var createdAt = DateTimeOffset.Parse("2018-11-11T00:00:00Z");
+                var from = DateTimeOffset.Parse("2018-11-11T00:00:00Z");
+                var to = DateTimeOffset.Parse("2018-11-11T23:59:59Z");
+
+                Treatment currentDailySummaryTreatment =
+                    await GetLatestDailySummaryAsync(client, from, to);
+
+                if (currentDailySummaryTreatment != null)
+                {
+                    createdAt = createdAt.AddSeconds(1);
+                }
+
+                string expectedNotes = Guid.NewGuid().ToString("N");
+
+                Treatment postResponse = await client.SetDailySummaryTreatmentsAsync(
+                    CancellationToken.None,
+                    createdAt,
+                    expectedNotes);
+
+                currentDailySummaryTreatment =
+                    await GetLatestDailySummaryAsync(client, from, to);
+
+                Assert.IsNotNull(currentDailySummaryTreatment, nameof(currentDailySummaryTreatment));
+                Assert.IsNotNull(currentDailySummaryTreatment.Notes, nameof(currentDailySummaryTreatment.Notes));
+                Assert.AreEqual(postResponse.CreatedAt, currentDailySummaryTreatment.CreatedAt, nameof(currentDailySummaryTreatment.Notes));
+                Assert.AreEqual(postResponse.Notes, currentDailySummaryTreatment.Notes, nameof(currentDailySummaryTreatment.Notes));
+                Assert.AreEqual(expectedNotes, currentDailySummaryTreatment.Notes, nameof(currentDailySummaryTreatment.Notes));
+
+                Console.WriteLine("OUTPUT: {0}", currentDailySummaryTreatment);
+            }
+        }
+
+        [TestMethod]
+        public async Task InjectMeterValueSucceeds()
+        {
+            using (var client = new NightScoutClient(BaseUri, TemporaryToken, Log))
+            {
+                var createdAt = DateTimeOffset.Parse("2019-01-17T00:00:00Z");
+                var from = DateTimeOffset.Parse("2019-01-17T00:00:00Z");
+                var to = DateTimeOffset.Parse("2019-01-17T23:59:59Z");
+
+                Entry latestInjectedMeterValueEntry =
+                    await GetLatestInjectedMeterValueAsync(client, from, to);
+
+                if (latestInjectedMeterValueEntry != null)
+                {
+                    createdAt = createdAt.AddSeconds(1);
+                }
+
+                uint expectedMeterValue = (uint)(90 + rnd.Next(20));
+
+                Entry postResponse = await client.InjectMeterBloodGlucoseValueAsync(
+                    CancellationToken.None,
+                    createdAt,
+                    expectedMeterValue);
+
+                latestInjectedMeterValueEntry =
+                    await GetLatestInjectedMeterValueAsync(client, from, to);
+
+                Assert.IsNotNull(latestInjectedMeterValueEntry, nameof(latestInjectedMeterValueEntry));
+                Assert.IsNotNull(latestInjectedMeterValueEntry.Mbg, nameof(latestInjectedMeterValueEntry.Mbg));
+                Assert.AreEqual(postResponse.Date, latestInjectedMeterValueEntry.Date, nameof(latestInjectedMeterValueEntry.Date));
+                Assert.AreEqual(postResponse.Mbg, latestInjectedMeterValueEntry.Mbg, nameof(latestInjectedMeterValueEntry.Mbg));
+                Assert.AreEqual(expectedMeterValue, latestInjectedMeterValueEntry.Mbg, nameof(latestInjectedMeterValueEntry.Mbg));
+
+                Console.WriteLine("OUTPUT: {0}", latestInjectedMeterValueEntry);
+            }
+        }
+
+        private static async Task<Treatment> GetLatestDailySummaryAsync(
+            NightScoutClient client,
+            DateTimeOffset from,
+            DateTimeOffset to)
+        {
+            IList<Treatment> treatments = await client.GetTreatmentsAsync(
+                    CancellationToken.None,
+                    id: null,
+                    from: DateTimeOffset.Parse("2018-11-11T00:00:00Z"),
+                    to: DateTimeOffset.Parse("2018-11-11T23:59:59Z"),
+                    maxCount: null);
+
+            Treatment[] temp = treatments
+                    .Where(t => t.EnteredBy == "NightScoutReporter" && t.EventType == "Note")
+                    .OrderBy(t => t.CreatedAt).ToArray();
+
+            return temp.LastOrDefault();
+        }
+
+        private static async Task<Entry> GetLatestInjectedMeterValueAsync(
+            NightScoutClient client,
+            DateTimeOffset from,
+            DateTimeOffset to)
+        {
+            IList<Entry> entries = await client.GetEntriesAsync(
+                    CancellationToken.None,
+                    EntryType.All,
+                    from: from,
+                    to: to,
+                    maxCount: null);
+
+            Entry[] temp = entries
+                    .Where(e => e.Device == "NightScoutReporter").ToArray();
+
+            temp = entries
+                    .Where(e => e.Type == "mbg").ToArray();
+
+            temp = entries
+                    .Where(e => e.Device == "NightScoutReporter" && e.Type == "mbg")
+                    .OrderBy(e => e.Date).ToArray();
+
+            return temp.LastOrDefault();
         }
 
         [TestMethod]

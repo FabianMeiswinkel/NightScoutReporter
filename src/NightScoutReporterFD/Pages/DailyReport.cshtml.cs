@@ -314,7 +314,20 @@ namespace NightScoutReporterFD.Pages
                     var eventTypes = new HashSet<string>(
                         treatments.Select(t => t.EventType));
 
-                    this.DailySummary = new HtmlString(String.Join(',', eventTypes));
+                    Treatment dailySummaryTreatment = treatments
+                        .Where(t => t.EventType == "NightScoutReporterDailySummary")
+                        .OrderBy(t => t.CreatedAt)
+                        .LastOrDefault();
+
+                    if (dailySummaryTreatment != null &&
+                        !String.IsNullOrWhiteSpace(dailySummaryTreatment.Notes))
+                    {
+                        this.DailySummary = new HtmlString(String.Join(',', eventTypes));
+                    }
+                    else
+                    {
+                        this.DailySummary = new HtmlString("Keine");
+                    }
 
                     List<MealBolusTreatment> mealBoulsTreatments = ToMealBolusTreatments(treatments);
                     var sb = new StringBuilder();
